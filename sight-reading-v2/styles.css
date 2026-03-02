@@ -1,0 +1,96 @@
+
+
+html {
+    background-color: bisque;
+}
+
+button {
+    display:block;
+    margin: 1rem;
+    background-color:rgba(255, 248, 240, 0.377);
+    align-self: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: large;
+    border-radius: 8px;
+}
+
+h1 {
+    margin-top: 4rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+canvas {
+    align-self: center;
+}
+
+input {
+    background-color: rgba(255, 248, 240, 0.377);
+    border-radius: 5px;
+    height: 35px;
+}
+
+input:invalid:focus {
+    outline: solid brown;
+}
+input:invalid {
+    margin-left: 20pt;
+    border-color: brown;
+}
+
+input:valid {
+    border-color: blue;
+}
+
+input:invalid + div > span::after {
+  color: brown;
+  content: "✖";
+}
+
+/*  may need to just manually do this in js */
+/* input:valid + span::after {
+  color:rgb(42, 165, 69);
+  content: "✓";
+} */
+
+#validity {
+    font-size: 20pt;
+    padding-left: 10px;
+}
+
+p {
+    margin: .5rem;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: larger;
+}
+
+#canvas-holder {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+}
+
+
+#correct-ans {
+    color: rgb(42, 165, 69);
+}
+
+#incorrect-ans {
+    color: brown;
+}
+
+
+#session-form {
+    display: flex;
+}
+
+.test {
+    background-color: rgba(12, 30, 48, 0.575);
+}

@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Sight Reading Applet</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <h1>Sight Reading Practice Applet</h1>
+        <div id="canvas-holder">
+            <canvas id="canvas"  width="900rem" height="500rem"></canvas>
+            <!-- Debug Elements -->
+            <!-- <div id="button-holder" class="row">
+                <button onclick="makeBox()">Toggle vaguely purple box</button>
+                <button onclick="resetBox()">Reset canvas</button>
+                <button onclick="addStaves()">Add the staff lines</button>
+                <button onclick="placeAllNotes()">All all the notes</button>
+                <button onclick="generateRandomNote()">Randomize Note</button>
+            </div> -->
+            <div id="set-up" class="row">
+
+                <button id="practice" onclick="practice()"></button>
+            </div>
+            <div id="session" class="row">
+                <form id="session-form">
+                    <input 
+                        type="text"
+                        id="num-input"
+                        maxlength="1"
+                    />
+                    <div id="validity-holder">
+                        <span id="validity"></span>
+                    </div>
+                </form>
+            </div>
+            <div id="results" class="row">
+                <p>You got <span id="correct-ans"></span> notes correct!</p>
+                <p>You made <span id="incorrect-ans"></span> mistakes!</p>
+            </div>
+        </div>
+        <div>TODO:
+            <ul>
+                <li>Add Bass Clef</li>
+                <li>Add Some Sort of Visual Indicator for Treble and Bass Clefs on the staff</li>
+                <li>Add settings for clef, sharps, flats, etc</li>
+                <li>Add more details on finish session page</li>
+                <li>Maybe like how long it took or what the notes were, might be good?</li>
+                <li>Cleanup</li>
+                <li>Add multiple notes in the fuuuturee~</li>
+                <li>For those notes figure out how to connect them together</li>
+                <li>Add Proper Validation Message After Failure</li>
+            </ul>
+        </div>
+        <script src="main.js"></script>
+    </body>
+</html>
