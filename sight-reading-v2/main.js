@@ -10,6 +10,10 @@ let cHalfHeight;
 let fillColor = "rgba(192, 187, 207, 1)";
 let ledgerHeight = 40;
 
+let setUpDiv;
+let sharpCheck;
+let flatCheck;
+
 let noteMap = new Map();
 let currentNoteIndex;
 
@@ -23,12 +27,26 @@ let sessionInput;
 let resultDiv;
 let correctAnswers = 0;
 let incorrectAnswers = 0;
+let startTimeStamp;
+let endTimeStamp;
+let resultsStats = [];
 let correctAnswerSpan;
 let incorrectAnswerSpan;
+
+let isTreble = true;
+let includeSharps = false;
+let includeFlats = false;
+
+let trebleImg;
+let bassImg;
 
 // debug variable
 // let boxExists = true;
 function main() {
+    setUpDiv = document.getElementById("set-up");
+    sharpCheck = document.getElementById("sharp-toggle");
+    flatCheck = document.getElementById("flat-toggle");
+
     practiceButton = document.getElementById("practice");
     practiceButton.innerHTML = "Start Practice";
 
@@ -51,18 +69,22 @@ function main() {
     cHalfHeight = cHeight / 2;
 
     ctx = canvas.getContext("2d");
-    
+
+    let width = 100;
+    trebleImg = new Image(width, width * 2.5);
+    trebleImg.src = "https://upload.wikimedia.org/wikipedia/commons/f/ff/GClef.svg";
+
+    bassImg = new Image(width, width);
+    bassImg.src = "https://upload.wikimedia.org/wikipedia/commons/c/c5/FClef.svg";
+
     ctx.fillStyle = fillColor;
     ctx.fillRect(0, 0, cWidth, cHeight);
-    addStaves(true);
+    clearResultStats();
+    resetCanvas();
     populateNoteMap(true);
+    
 
-    // don't worry about this for now ooffff
-    // const trebleImg = new Image();
-    // trebleImg.onload = () => {
-    //     ctx.drawImage(img, 12, cHalfHeight + 80);
-    // }
-    // trebleImg.src = "https://en.wikipedia.org/wiki/File:Treble_clef.svg";
+    setUpEventListeners();
 }
 
 function makeBox() {
@@ -88,7 +110,6 @@ function resetBox() {
 }
 
 function addStaves() {
-    resetBox();
     ctx.fillStyle = "black";
     for (let i = -2; i < 3; i++) {
         let height = i * 40 - 1;
@@ -96,10 +117,65 @@ function addStaves() {
     }
 }
 
-function populateNoteMap(isTreble) {
+function showTrebleClef() {
+    ctx.drawImage(trebleImg, 5, cHalfHeight / 2, trebleImg.width, trebleImg.height);
+    populateNoteMap();
+}
+
+function showBaseClef() {
+    ctx.drawImage(bassImg, 5, cHalfHeight / 1.4, bassImg.width, bassImg.height);
+    populateNoteMap();
+}
+
+function resetCanvas() {
+    resetBox();
+    addStaves();
     if (isTreble) {
-        let noteList = ["B", "C", "D", "E", "F", "G", "A"];
-        for (let i = -11; i < 12; i++) {
+        showTrebleClef();
+    } else {
+        showBaseClef();
+    }
+}
+
+function setUpEventListeners() {
+    const radios = document.getElementsByName("clefs");
+    radios[0].checked = true;
+    radios[1].checked = false;
+
+    radios[0].addEventListener("change", toggleClef);
+    radios[1].addEventListener("change", toggleBass);
+
+    sharpCheck.addEventListener("change", toggleSharps);
+    flatCheck.addEventListener("change", toggleFlats);
+}
+
+function toggleClef() {
+    isTreble = true;
+    resetCanvas();
+
+}
+function toggleBass() {
+    isTreble = false;
+    resetCanvas();
+}
+
+function toggleSharps() {
+    includeSharps = !includeSharps;
+}
+
+function toggleFlats() {
+    includeFlats = !includeFlats;
+}
+
+function populateNoteMap() {
+    let noteList;
+    if (isTreble) {
+        noteList = ["B", "C", "D", "E", "F", "G", "A"];
+    } else {
+        noteList = ["D", "E", "F", "G", "A", "B", "C"];
+    }
+
+    for (let i = -11; i < 12; i++) {
             let index = 0;
             if (i < 0) {
                 index = (noteList.length - ((i * -1) % noteList.length)) % noteList.length;
@@ -108,15 +184,17 @@ function populateNoteMap(isTreble) {
             }
             noteMap.set(i, noteList[index])
         }
-    }
 }
 
+
 function generateRandomNote() {
-    resetBox();
-    addStaves();
-    let randIndex = getRandomInt(-11, 12);
-    currentNoteIndex = randIndex;
-    placeNote(randIndex);
+    if (practiceStarted) {
+        resetCanvas();
+        let randIndex = getRandomInt(-11, 12);
+        currentNoteIndex = randIndex;
+        addToResultsStats();
+        placeNote(randIndex);
+    }
 }
 
 function placeNote(index) {
@@ -146,39 +224,56 @@ function addLedgers(index) {
 function practice() {
     if (!practiceStarted) {
         practiceStarted = true;
+        startTimeStamp = Date.now();
         correctAnswers = 0;
         incorrectAnswers = 0;
         practiceButton.innerHTML = "Stop Practice";
-        generateRandomNote();
         sessionDiv.style.display = "flex";
         resultDiv.style.display = "none";
+        setUpDiv.style.display = "none";
+
+        clearResultStats();
+        generateRandomNote();
+
         sessionInput.style.marginLeft = "0";
         let html = "<span id=\"validity\"></span>";
         document.getElementById("validity-holder").innerHTML = html;
     } else {
         practiceStarted = false;
+        endTimeStamp  = Date.now();
         practiceButton.innerHTML = "Start Practice";
+
+        setResults();
+        
         sessionDiv.style.display = "none";
-        correctAnswerSpan.innerHTML = correctAnswers;
-        incorrectAnswerSpan.innerHTML = incorrectAnswers;
         resultDiv.style.display = "flex";
-        addStaves();
+        setUpDiv.style.display = "flex";
+
+        generateStats();
+        resetCanvas();
     }
 }
 
 function checkNote() {
+    // styling to keep the text input even with the checkmark
     sessionInput.style.marginLeft = "0";
     let html = "<span id=\"validity\"></span>";
     document.getElementById("validity-holder").innerHTML = html;
+
+    let input = sessionInput.value.toUpperCase();
+
     if (sessionInput.value.length > 1) {
         sessionInput.setCustomValidity("Too Many Characters");
-    }else if (sessionInput.value.toUpperCase() === noteMap.get(currentNoteIndex)) {
+    }else if (input === noteMap.get(currentNoteIndex)) {
         sessionInput.setCustomValidity("");
         correctAnswers++;
+        setResultStatEndTime();
+        addAttemptToResultsStats(input);
         putCorrectAnswer(currentNoteIndex);
         sessionInput.value = "";
         setTimeout(generateRandomNote, 2000);
     } else {
+        addAttemptToResultsStats(input);
         incorrectAnswers++;
         sessionInput.value = "";
         sessionInput.style.marginLeft = "20pt";
@@ -197,11 +292,91 @@ function putCorrectAnswer(index) {
     document.getElementById("validity-holder").innerHTML = html;
 }
 
+function clearResultStats() {
+    let div = document.getElementById("results-stats");
+    div.innerHTML = `
+    <table>
+        <thead>
+            <tr>
+            <th scope="col">Note</th>
+            <th scope="col">Guesses</th>
+            <th scope="col">Attempts</th>
+            <th scope="col">Time Elapsed</th>
+            <th scope="col">Location</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    `;
+    div.style.display = "none";
+
+    resultsStats = [];
+
+}
+
+function addToResultsStats() {
+    let location;
+
+    if (currentNoteIndex > 4) {
+        location = "top ledger";
+    } else if (currentNoteIndex < -4) {
+        location = "bottom ledger";
+    } else {
+        location = "staff";
+    }
+    
+    resultsStats.push({
+        note: noteMap.get(currentNoteIndex),
+        attempts: 0,
+        guesses: [],
+        startTimeStamp: Date.now(),
+        endTimeStamp: Date.now(),
+        location: location
+    });
+}
+
+function setResultStatEndTime() {
+    resultsStats[resultsStats.length - 1].endTimeStamp = Date.now();
+}
+
+function addAttemptToResultsStats(guess) {
+    resultsStats[resultsStats.length - 1].attempts++;
+    resultsStats[resultsStats.length - 1].guesses.push(guess);
+}
+
+function generateStats() {
+    const statsDiv = document.getElementById("results-stats");
+    statsDiv.style.display = "flex";
+    const statsBody = statsDiv.getElementsByTagName("tbody");
+    let rows = "";
+    resultsStats.forEach((stat) => {
+        const timeElapsed = timeStampFormatter(stat.endTimeStamp - stat.startTimeStamp);
+        const timeString = `${timeElapsed.m}:${timeElapsed.s}:${timeElapsed.ms}`;
+        rows += ` <tr>
+            <th scope="row">${stat.note}</th>
+            <td>${stat.guesses.join(", ")}</td>
+            <td>${stat.attempts}</td>
+            <td>${timeString}</td>
+            <td>${stat.location}</td>
+        </tr>`;
+    });
+
+    statsBody[0].innerHTML = "<tbody>"+ rows + "</tbody>"
+}
+
+function setResults() {
+    correctAnswerSpan.innerHTML = correctAnswers;
+    incorrectAnswerSpan.innerHTML = incorrectAnswers;
+
+    let stamp = timeStampFormatter(endTimeStamp - startTimeStamp);
+    document.getElementById("timestamp").innerHTML = `<p>You practiced for ${stamp.h} hour(s), ${stamp.m} minute(s), and ${stamp.s} second(s)</p>`;
+}
+
 
 // debug function
 function placeAllNotes() {
-    resetBox();
-    addStaves();
+    resetCanvas();
     for(let i = -11; i < 12; i++) {
         placeNoteDebug(i);
     }
@@ -232,4 +407,32 @@ function getRandomInt(min, max) {
   const minCeiled = Math.ceil(min);
   const maxFloored = Math.floor(max);
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+}
+
+function timeStampFormatter(timestamp) {
+    let times = {
+        ms: 0,
+        s: 0,
+        m: 0,
+        h: 0
+    }
+
+    times.ms = timestamp % 1000;
+
+    let seconds = timestamp / 1000;
+    if (seconds > 59) {
+        seconds = seconds - ((seconds % 60) * 60);
+    }
+    times.s = Math.floor(seconds);
+
+    let minutes = timestamp / 1000 / 60;
+    if (minutes > 59) {
+        minutes = minutes - ((minutes % 60) * 60);
+    }
+    times.m = Math.floor(minutes);
+
+    times.h = Math.floor(timestamp / 1000 / 60 / 60);
+    console.log(times);
+
+    return times;
 }

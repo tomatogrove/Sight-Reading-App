@@ -25,31 +25,31 @@ canvas {
     align-self: center;
 }
 
-input {
+#num-input {
     background-color: rgba(255, 248, 240, 0.377);
     border-radius: 5px;
     height: 35px;
 }
 
-input:invalid:focus {
+#num-input:invalid:focus {
     outline: solid brown;
 }
-input:invalid {
+#num-input:invalid {
     margin-left: 20pt;
     border-color: brown;
 }
 
-input:valid {
+#num-input:valid {
     border-color: blue;
 }
 
-input:invalid + div > span::after {
+#num-input:invalid + div > span::after {
   color: brown;
   content: "✖";
 }
 
 /*  may need to just manually do this in js */
-/* input:valid + span::after {
+/* #num-input:valid + span::after {
   color:rgb(42, 165, 69);
   content: "✓";
 } */
@@ -63,6 +63,14 @@ p {
     margin: .5rem;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-size: larger;
+    text-align: center;
+}
+
+label {
+    margin: .5rem;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: larger;
+    text-align: center;
 }
 
 #canvas-holder {
@@ -75,6 +83,12 @@ p {
     display: flex;
     justify-content: center;
     flex-direction: row;
+}
+
+.column {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 }
 
 
