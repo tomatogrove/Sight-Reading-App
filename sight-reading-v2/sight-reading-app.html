@@ -2,6 +2,7 @@
     <head>
         <title>Sight Reading Applet</title>
         <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="toggle-button.css">
     </head>
     <body>
         <h1>Sight Reading Practice Applet</h1>
@@ -16,9 +17,39 @@
                 <button onclick="generateRandomNote()">Randomize Note</button>
             </div> -->
             <div id="set-up" class="row">
-
-                <button id="practice" onclick="practice()"></button>
+                <div class="column">
+                    <label for="radio">Clef</label>
+                    <div class="row">
+                        <label for="trebleRadio"> Treble
+                            <input type="radio" name="clefs" id="trebleRadio" checked value="treble"/>
+                        </label>
+                        <label for="bassRadio"> Bass
+                            <input type="radio" name="clefs" id="bassRadio" value="bass"/>
+                        </label>
+                    </div>
+                </div>
+                <div class="column" style="margin-top: .5rem;">
+                    <label for="sharp-toggle"> Sharps
+                        <div class="row">
+                            <label id="sharp-toggle" class="toggle">
+                                <input type="checkbox" id="sharp-toggle" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </label>
+                </div>
+                <div class="column" style="margin-top: .5rem;">
+                    <label for="flats-toggle"> Flats
+                        <div class="row">
+                            <label id="flats-toggle" class="toggle">
+                                <input type="checkbox" id="flat-toggle" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </label>
+                </div>
             </div>
+            <button id="practice" onclick="practice()"></button>
             <div id="session" class="row">
                 <form id="session-form">
                     <input 
@@ -31,18 +62,41 @@
                     </div>
                 </form>
             </div>
-            <div id="results" class="row">
-                <p>You got <span id="correct-ans"></span> notes correct!</p>
-                <p>You made <span id="incorrect-ans"></span> mistakes!</p>
+            <div id="results" class="column">
+                <div class="row">
+                    <p>You got <span id="correct-ans"></span> note(s) correct!</p>
+                    <p>You made <span id="incorrect-ans"></span> mistake(s)!</p>
+                </div>
+                <div id="timestamp" class="row">
+                    <!-- results manually inserted -->
+                </div>
+            </div>
+            <div id="results-stats" class="row">
+                <table>
+                      <thead>
+                        <tr>
+                        <th scope="col">Note</th>
+                        <th scope="col">Guesses</th>
+                        <th scope="col">Attempts</th>
+                        <th scope="col">Time Elapsed</th>
+                        <th scope="col">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- results manually inserted -->
+                    </tbody>
+                </table>
             </div>
         </div>
         <div>TODO:
             <ul>
-                <li>Add Bass Clef</li>
-                <li>Add Some Sort of Visual Indicator for Treble and Bass Clefs on the staff</li>
-                <li>Add settings for clef, sharps, flats, etc</li>
-                <li>Add more details on finish session page</li>
-                <li>Maybe like how long it took or what the notes were, might be good?</li>
+                <li style="text-decoration: line-through;">Add Bass Clef</li>
+                <li style="text-decoration: line-through;">Add Some Sort of Visual Indicator for Treble and Bass Clefs on the staff</li>
+                <li style="text-decoration: line-through;">Add settings for clef, sharps, flats, etc</li>
+                <li style="text-decoration: line-through;">Add more details on finish session page</li>
+                <li style="text-decoration: line-through;">Maybe like how long it took or what the notes were, might be good?</li>
+                <li>Add Sharp/Flat functionality not just the setting</li>
+                <li>This probably means adding in a new note input feature..... oof</li>
                 <li>Cleanup</li>
                 <li>Add multiple notes in the fuuuturee~</li>
                 <li>For those notes figure out how to connect them together</li>
