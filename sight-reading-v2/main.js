@@ -225,6 +225,7 @@ function practice() {
     if (!practiceStarted) {
         practiceStarted = true;
         startTimeStamp = Date.now();
+        endTimeStamp = 0;
         correctAnswers = 0;
         incorrectAnswers = 0;
         practiceButton.innerHTML = "Stop Practice";
@@ -420,14 +421,15 @@ function timeStampFormatter(timestamp) {
     times.ms = timestamp % 1000;
 
     let seconds = timestamp / 1000;
+    console.log(seconds);
     if (seconds > 59) {
-        seconds = seconds - ((seconds % 60) * 60);
+        seconds  = seconds % 60;
     }
     times.s = Math.floor(seconds);
 
     let minutes = timestamp / 1000 / 60;
     if (minutes > 59) {
-        minutes = minutes - ((minutes % 60) * 60);
+        minutes = minutes % 60;
     }
     times.m = Math.floor(minutes);
 
