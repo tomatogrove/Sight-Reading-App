@@ -15,12 +15,17 @@ let sharpCheck;
 let flatCheck;
 
 let noteMap = new Map();
-let currentNoteIndex;
+let currentNoteInfo = {
+    currentNoteIndex: -1,
+    sharp: false,
+    flat: false
+}
 
 let practiceButton;
 let practiceStarted = false;
 
 let sessionDiv;
+let sessionInputDiv;
 let sessionForm;
 let sessionInput;
 
@@ -43,6 +48,28 @@ let bassImg;
 // debug variable
 // let boxExists = true;
 function main() {
+    setUpElements();
+
+    let width = 100;
+    trebleImg = new Image(width, width * 2.5);
+    trebleImg.src = "https://upload.wikimedia.org/wikipedia/commons/f/ff/GClef.svg";
+    
+    bassImg = new Image(width, width);
+    bassImg.src = "https://upload.wikimedia.org/wikipedia/commons/c/c5/FClef.svg";
+
+
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(0, 0, cWidth, cHeight);
+    clearResultStats();
+    resetCanvas();
+    populateNoteMap(true);
+    
+
+    setUpEventListeners();
+}
+
+// set up functions (settings)
+function setUpElements() {
     setUpDiv = document.getElementById("set-up");
     sharpCheck = document.getElementById("sharp-toggle");
     flatCheck = document.getElementById("flat-toggle");
@@ -52,6 +79,8 @@ function main() {
 
     sessionDiv = document.getElementById("session");
     sessionDiv.style.display = "none";
+    sessionInputDiv = document.getElementById("session-inputs");
+    sessionInputDiv.style.display = "none";
     sessionForm = document.getElementById("session-form");
     sessionInput = document.getElementById("num-input");
     sessionInput.addEventListener("keyup", checkNote);
@@ -69,52 +98,28 @@ function main() {
     cHalfHeight = cHeight / 2;
 
     ctx = canvas.getContext("2d");
+}
 
-    let width = 100;
-    trebleImg = new Image(width, width * 2.5);
-    trebleImg.src = "https://upload.wikimedia.org/wikipedia/commons/f/ff/GClef.svg";
+function setUpEventListeners() {
+    const radios = document.getElementsByName("clefs");
+    radios[0].checked = true;
+    radios[1].checked = false;
+    
+    radios[0].addEventListener("change", toggleClef);
+    radios[1].addEventListener("change", toggleBass);
 
-    bassImg = new Image(width, width);
-    bassImg.src = "https://upload.wikimedia.org/wikipedia/commons/c/c5/FClef.svg";
+    sharpCheck.addEventListener("change", toggleSharps);
+    flatCheck.addEventListener("change", toggleFlats);
+}
 
-    ctx.fillStyle = fillColor;
-    ctx.fillRect(0, 0, cWidth, cHeight);
-    clearResultStats();
+function toggleClef() {
+    isTreble = true;
     resetCanvas();
-    populateNoteMap(true);
-    
-
-    setUpEventListeners();
 }
 
-function makeBox() {
-    if (boxExists) {
-        boxExists = false;
-        ctx.clearRect(0, 0, cWidth, cHeight);
-    } else {
-        boxExists = true;
-
-        ctx.fillStyle = fillColor;
-        ctx.fillRect(0, 0, cWidth, cHeight);
-    }
-    
-}
-
-function resetBox() {
-    boxExists = false;
-    ctx.clearRect(0, 0, cWidth, cHeight);
-
-    boxExists = true;
-    ctx.fillStyle = fillColor;
-    ctx.fillRect(0, 0, cWidth, cHeight);
-}
-
-function addStaves() {
-    ctx.fillStyle = "black";
-    for (let i = -2; i < 3; i++) {
-        let height = i * 40 - 1;
-        ctx.fillRect(10, cHalfHeight + height, cWidth - 20, 2);
-    }
+function toggleBass() {
+    isTreble = false;
+    resetCanvas();
 }
 
 function showTrebleClef() {
@@ -127,6 +132,16 @@ function showBaseClef() {
     populateNoteMap();
 }
 
+
+function resetBox() {
+    boxExists = false;
+    ctx.clearRect(0, 0, cWidth, cHeight);
+
+    boxExists = true;
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(0, 0, cWidth, cHeight);
+}
+
 function resetCanvas() {
     resetBox();
     addStaves();
@@ -137,34 +152,12 @@ function resetCanvas() {
     }
 }
 
-function setUpEventListeners() {
-    const radios = document.getElementsByName("clefs");
-    radios[0].checked = true;
-    radios[1].checked = false;
-
-    radios[0].addEventListener("change", toggleClef);
-    radios[1].addEventListener("change", toggleBass);
-
-    sharpCheck.addEventListener("change", toggleSharps);
-    flatCheck.addEventListener("change", toggleFlats);
-}
-
-function toggleClef() {
-    isTreble = true;
-    resetCanvas();
-
-}
-function toggleBass() {
-    isTreble = false;
-    resetCanvas();
-}
-
-function toggleSharps() {
-    includeSharps = !includeSharps;
-}
-
-function toggleFlats() {
-    includeFlats = !includeFlats;
+function addStaves() {
+    ctx.fillStyle = "black";
+    for (let i = -2; i < 3; i++) {
+        let height = i * 40 - 1;
+        ctx.fillRect(10, cHalfHeight + height, cWidth - 20, 2);
+    }
 }
 
 function populateNoteMap() {
@@ -186,15 +179,106 @@ function populateNoteMap() {
         }
 }
 
+function toggleSharps() {
+    includeSharps = !includeSharps;
+}
+
+function toggleFlats() {
+    includeFlats = !includeFlats;
+}
+
+
+
+// session functions
+function practice() {
+    if (!practiceStarted) {
+        practiceStarted = true;
+        startTimeStamp = Date.now();
+        endTimeStamp = 0;
+        correctAnswers = 0;
+        incorrectAnswers = 0;
+        practiceButton.innerHTML = "Stop Practice";
+
+        toggleDivVisibilities();
+        clearResultStats();
+        generateRandomNote();
+
+        // TODO: Remove these 3 lines once new inputs implemented
+        sessionInput.style.marginLeft = "0";
+        let html = "<span id=\"validity\"></span>";
+        document.getElementById("validity-holder").innerHTML = html;
+    } else {
+        practiceStarted = false;
+        endTimeStamp  = Date.now();
+        practiceButton.innerHTML = "Start Practice";
+
+        setResults();
+        toggleDivVisibilities();
+        generateStats();
+        resetCanvas();
+    }
+}
+
+function toggleDivVisibilities() {
+    if (practiceStarted) {
+        sessionInputDiv.style.display = "flex";
+        sessionDiv.style.display = "flex";
+        resultDiv.style.display = "none";
+        setUpDiv.style.display = "none";
+    } else {
+        sessionInputDiv.style.display = "none";
+        sessionDiv.style.display = "none";
+        resultDiv.style.display = "flex";
+        setUpDiv.style.display = "flex";
+    }
+}
 
 function generateRandomNote() {
     if (practiceStarted) {
         resetCanvas();
-        let randIndex = getRandomInt(-11, 12);
-        currentNoteIndex = randIndex;
+        currentNoteInfo.currentNoteIndex = getRandomInt(-11, 12);
+        if (sharpCheck || flatCheck) {
+            addSharpOrFlat();
+        }
         addToResultsStats();
-        placeNote(randIndex);
+        createNoteInputs();
+        placeNote(currentNoteInfo.currentNoteIndex);
     }
+}
+
+function addSharpOrFlat() {
+    currentNoteInfo.sharp = false;
+    currentNoteInfo.flat = false;
+    let status;
+    if (sharpCheck && flatCheck) {
+        status = getRandomInt(-1, 1);
+    } else if (sharpCheck) {
+        status = getRandomInt(0, 1);
+    } else {
+        status = getRandomInt(-1, 0);
+    }
+
+    currentNoteInfo.sharp = status === 1;
+    currentNoteInfo.flat = status === -1;
+}
+
+// still have to test this but uhhhhhh here we go
+function createNoteInputs() {
+    let noteList = ["A", "B", "C", "D", "E", "F", "G"];
+
+    let naturalStr = "";
+    let sharpStr = "";
+    let flatStr = "";
+
+    for (let note in noteList) {
+        naturalStr += ` <button id="${note}">${note}</button> `;
+        sharpStr += sharpCheck ? ` <button id="${note}#">${note}#</button> ` : "";
+        flatStr += flatCheck ? ` <button id="${note}b">${note}b</button> ` : "";
+    }
+
+    document.getElementById("naturals").innerHTML = naturalStr;
+    document.getElementById("sharps").innerHTML = sharpStr;
+    document.getElementById("flats").innerHTML = flatStr;
 }
 
 function placeNote(index) {
@@ -206,6 +290,9 @@ function placeNote(index) {
 
     if (Math.abs(index) > 4) {
         addLedgers(index);
+    }
+    if (currentNoteInfo.sharp || currentNoteInfo.flat) {
+        placeAccidental();
     }
 }
 
@@ -221,42 +308,9 @@ function addLedgers(index) {
     }
 }
 
-function practice() {
-    if (!practiceStarted) {
-        practiceStarted = true;
-        startTimeStamp = Date.now();
-        endTimeStamp = 0;
-        correctAnswers = 0;
-        incorrectAnswers = 0;
-        practiceButton.innerHTML = "Stop Practice";
-        sessionDiv.style.display = "flex";
-        resultDiv.style.display = "none";
-        setUpDiv.style.display = "none";
-
-        clearResultStats();
-        generateRandomNote();
-
-        sessionInput.style.marginLeft = "0";
-        let html = "<span id=\"validity\"></span>";
-        document.getElementById("validity-holder").innerHTML = html;
-    } else {
-        practiceStarted = false;
-        endTimeStamp  = Date.now();
-        practiceButton.innerHTML = "Start Practice";
-
-        setResults();
-        
-        sessionDiv.style.display = "none";
-        resultDiv.style.display = "flex";
-        setUpDiv.style.display = "flex";
-
-        generateStats();
-        resetCanvas();
-    }
-}
-
 function checkNote() {
     // styling to keep the text input even with the checkmark
+    // TODO: Remove following 3 lines once new inputs added
     sessionInput.style.marginLeft = "0";
     let html = "<span id=\"validity\"></span>";
     document.getElementById("validity-holder").innerHTML = html;
@@ -265,16 +319,18 @@ function checkNote() {
 
     if (sessionInput.value.length > 1) {
         sessionInput.setCustomValidity("Too Many Characters");
-    }else if (input === noteMap.get(currentNoteIndex)) {
+    }else if (input === noteMap.get(currentNoteInfo.currentNoteIndex)) {
         sessionInput.setCustomValidity("");
         correctAnswers++;
         setResultStatEndTime();
         addAttemptToResultsStats(input);
-        putCorrectAnswer(currentNoteIndex);
+        putCorrectAnswer(currentNoteInfo.currentNoteIndex);
+        markCorrect(input);
         sessionInput.value = "";
         setTimeout(generateRandomNote, 2000);
     } else {
         addAttemptToResultsStats(input);
+        markIncorrect(input);
         incorrectAnswers++;
         sessionInput.value = "";
         sessionInput.style.marginLeft = "20pt";
@@ -288,11 +344,22 @@ function putCorrectAnswer(index) {
     ctx.strokeText(noteMap.get(index), cHalfWidth + 35, cHalfHeight - (index * 20) + 7);
     // this is so cursed but its here because otherwise the green check is always there unless the
     // answer is wrong. resetting the form does nothing
+    // TODO: Remove following 3 lines once new inputs added
     sessionInput.style.marginLeft = "20pt";
     let html = "<span id=\"validity\" style=\"color:rgb(42, 165, 69);\">✓</span>";
     document.getElementById("validity-holder").innerHTML = html;
 }
 
+function markCorrect(note) {
+
+}
+
+function markIncorrect(note) {
+
+}
+
+
+// results functions
 function clearResultStats() {
     let div = document.getElementById("results-stats");
     div.innerHTML = `
@@ -319,16 +386,16 @@ function clearResultStats() {
 function addToResultsStats() {
     let location;
 
-    if (currentNoteIndex > 4) {
+    if (currentNoteInfo.currentNoteIndex > 4) {
         location = "top ledger";
-    } else if (currentNoteIndex < -4) {
+    } else if (currentNoteInfo.currentNoteIndex < -4) {
         location = "bottom ledger";
     } else {
         location = "staff";
     }
     
     resultsStats.push({
-        note: noteMap.get(currentNoteIndex),
+        note: noteMap.get(currentNoteInfo.currentNoteIndex),
         attempts: 0,
         guesses: [],
         startTimeStamp: Date.now(),
@@ -374,6 +441,19 @@ function setResults() {
     document.getElementById("timestamp").innerHTML = `<p>You practiced for ${stamp.h} hour(s), ${stamp.m} minute(s), and ${stamp.s} second(s)</p>`;
 }
 
+// starter function (remove in the end)
+function makeBox() {
+    if (boxExists) {
+        boxExists = false;
+        ctx.clearRect(0, 0, cWidth, cHeight);
+    } else {
+        boxExists = true;
+
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(0, 0, cWidth, cHeight);
+    }
+    
+}
 
 // debug function
 function placeAllNotes() {
@@ -401,13 +481,6 @@ function placeNoteDebug(index) {
     if (Math.abs(index) > 4) {
         addLedgers(index);
     }
-}
-
-//directly from mdn Math.random() page
-function getRandomInt(min, max) {
-  const minCeiled = Math.ceil(min);
-  const maxFloored = Math.floor(max);
-  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
 }
 
 function timeStampFormatter(timestamp) {
@@ -438,3 +511,11 @@ function timeStampFormatter(timestamp) {
 
     return times;
 }
+
+//directly from mdn Math.random() page
+function getRandomInt(min, max) {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+}
+
