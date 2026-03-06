@@ -7,27 +7,27 @@ let cHalfWidth;
 let cHeight;
 let cHalfHeight;
 
-let fillColor = "rgba(192, 187, 207, 1)";
+let fillColor = "bisque";
 let ledgerHeight = 40;
 
 let setUpDiv;
 let sharpCheck;
 let flatCheck;
+let includeSharps = false;
+let includeFlats = false;
+let isTreble = true;
 
 let noteMap = new Map();
 let currentNoteInfo = {
     currentNoteIndex: -1,
     sharp: false,
     flat: false
-}
+};
 
 let practiceButton;
 let practiceStarted = false;
 
-let sessionDiv;
 let sessionInputDiv;
-let sessionForm;
-let sessionInput;
 
 let resultDiv;
 let correctAnswers = 0;
@@ -38,12 +38,12 @@ let resultsStats = [];
 let correctAnswerSpan;
 let incorrectAnswerSpan;
 
-let isTreble = true;
-let includeSharps = false;
-let includeFlats = false;
 
 let trebleImg;
 let bassImg;
+let sharpImg;
+let flatImg;
+let naturalImg;
 
 // debug variable
 // let boxExists = true;
@@ -57,6 +57,16 @@ function main() {
     bassImg = new Image(width, width);
     bassImg.src = "https://upload.wikimedia.org/wikipedia/commons/c/c5/FClef.svg";
 
+    width = 25;
+    sharpImg = new Image(width, width * 2);
+    sharpImg.src = "https://upload.wikimedia.org/wikipedia/commons/a/a6/Sharp.svg";
+
+    flatImg = new Image(width, width * 2);
+    flatImg.src = "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flat.svg";
+
+    naturalImg = new Image(width, width * 2);
+    naturalImg.src = "https://upload.wikimedia.org/wikipedia/commons/3/31/B%C3%A9carre.svg";
+    
 
     ctx.fillStyle = fillColor;
     ctx.fillRect(0, 0, cWidth, cHeight);
@@ -72,18 +82,15 @@ function main() {
 function setUpElements() {
     setUpDiv = document.getElementById("set-up");
     sharpCheck = document.getElementById("sharp-toggle");
+    sharpCheck.checked = false;
     flatCheck = document.getElementById("flat-toggle");
+    flatCheck.checked = false;
 
     practiceButton = document.getElementById("practice");
     practiceButton.innerHTML = "Start Practice";
 
-    sessionDiv = document.getElementById("session");
-    sessionDiv.style.display = "none";
     sessionInputDiv = document.getElementById("session-inputs");
     sessionInputDiv.style.display = "none";
-    sessionForm = document.getElementById("session-form");
-    sessionInput = document.getElementById("num-input");
-    sessionInput.addEventListener("keyup", checkNote);
 
     resultDiv = document.getElementById("results");
     resultDiv.style.display = "none";
@@ -122,17 +129,6 @@ function toggleBass() {
     resetCanvas();
 }
 
-function showTrebleClef() {
-    ctx.drawImage(trebleImg, 5, cHalfHeight / 2, trebleImg.width, trebleImg.height);
-    populateNoteMap();
-}
-
-function showBaseClef() {
-    ctx.drawImage(bassImg, 5, cHalfHeight / 1.4, bassImg.width, bassImg.height);
-    populateNoteMap();
-}
-
-
 function resetBox() {
     boxExists = false;
     ctx.clearRect(0, 0, cWidth, cHeight);
@@ -158,6 +154,16 @@ function addStaves() {
         let height = i * 40 - 1;
         ctx.fillRect(10, cHalfHeight + height, cWidth - 20, 2);
     }
+}
+
+function showTrebleClef() {
+    ctx.drawImage(trebleImg, 5, cHalfHeight / 2, trebleImg.width, trebleImg.height);
+    populateNoteMap();
+}
+
+function showBaseClef() {
+    ctx.drawImage(bassImg, 5, cHalfHeight / 1.4, bassImg.width, bassImg.height);
+    populateNoteMap();
 }
 
 function populateNoteMap() {
@@ -202,11 +208,6 @@ function practice() {
         toggleDivVisibilities();
         clearResultStats();
         generateRandomNote();
-
-        // TODO: Remove these 3 lines once new inputs implemented
-        sessionInput.style.marginLeft = "0";
-        let html = "<span id=\"validity\"></span>";
-        document.getElementById("validity-holder").innerHTML = html;
     } else {
         practiceStarted = false;
         endTimeStamp  = Date.now();
@@ -222,12 +223,10 @@ function practice() {
 function toggleDivVisibilities() {
     if (practiceStarted) {
         sessionInputDiv.style.display = "flex";
-        sessionDiv.style.display = "flex";
         resultDiv.style.display = "none";
         setUpDiv.style.display = "none";
     } else {
         sessionInputDiv.style.display = "none";
-        sessionDiv.style.display = "none";
         resultDiv.style.display = "flex";
         setUpDiv.style.display = "flex";
     }
@@ -236,13 +235,13 @@ function toggleDivVisibilities() {
 function generateRandomNote() {
     if (practiceStarted) {
         resetCanvas();
-        currentNoteInfo.currentNoteIndex = getRandomInt(-11, 12);
-        if (sharpCheck || flatCheck) {
+        currentNoteInfo.currentNoteIndex = getRandomInt(-11, 11);
+        if (includeSharps || includeFlats) {
             addSharpOrFlat();
         }
         addToResultsStats();
         createNoteInputs();
-        placeNote(currentNoteInfo.currentNoteIndex);
+        placeNote();
     }
 }
 
@@ -250,9 +249,9 @@ function addSharpOrFlat() {
     currentNoteInfo.sharp = false;
     currentNoteInfo.flat = false;
     let status;
-    if (sharpCheck && flatCheck) {
+    if (includeSharps && includeFlats) {
         status = getRandomInt(-1, 1);
-    } else if (sharpCheck) {
+    } else if (includeSharps) {
         status = getRandomInt(0, 1);
     } else {
         status = getRandomInt(-1, 0);
@@ -264,24 +263,25 @@ function addSharpOrFlat() {
 
 // still have to test this but uhhhhhh here we go
 function createNoteInputs() {
-    let noteList = ["A", "B", "C", "D", "E", "F", "G"];
+    let noteList = ["C", "D", "E", "F", "G", "A", "B"];
 
     let naturalStr = "";
     let sharpStr = "";
     let flatStr = "";
 
-    for (let note in noteList) {
-        naturalStr += ` <button id="${note}">${note}</button> `;
-        sharpStr += sharpCheck ? ` <button id="${note}#">${note}#</button> ` : "";
-        flatStr += flatCheck ? ` <button id="${note}b">${note}b</button> ` : "";
-    }
+    noteList.forEach((note) => {
+        naturalStr += ` <button id="${note}" class="note-buttons" onclick="checkNote('${note}')">${note}</button> `;
+        sharpStr += includeSharps ? ` <button id="${note}#" class="note-buttons" onclick="checkNote('${note}', '#')">${note}#</button> ` : "";
+        flatStr += includeFlats ? ` <button id="${note}b" class="note-buttons" onclick="checkNote('${note}', 'b')">${note}b</button> ` : "";
+    })
 
     document.getElementById("naturals").innerHTML = naturalStr;
     document.getElementById("sharps").innerHTML = sharpStr;
     document.getElementById("flats").innerHTML = flatStr;
 }
 
-function placeNote(index) {
+function placeNote() {
+    let index = currentNoteInfo.currentNoteIndex;
     ctx.beginPath();
     ctx.ellipse(cHalfWidth, cHalfHeight - (index * 20), 20, 16, 0, 0, 10);
     ctx.strokeStyle = "black";
@@ -289,14 +289,15 @@ function placeNote(index) {
     ctx.stroke();
 
     if (Math.abs(index) > 4) {
-        addLedgers(index);
+        addLedgers();
     }
     if (currentNoteInfo.sharp || currentNoteInfo.flat) {
         placeAccidental();
     }
 }
 
-function addLedgers(index) {
+function addLedgers() {
+    let index = currentNoteInfo.currentNoteIndex;
     ctx.fillStyle = "black";
     let numLedgers = Math.round((Math.abs(index)-4)/2);
     let polarity = index > 0 ? -1: 1;
@@ -308,33 +309,39 @@ function addLedgers(index) {
     }
 }
 
-function checkNote() {
-    // styling to keep the text input even with the checkmark
-    // TODO: Remove following 3 lines once new inputs added
-    sessionInput.style.marginLeft = "0";
-    let html = "<span id=\"validity\"></span>";
-    document.getElementById("validity-holder").innerHTML = html;
+function placeAccidental() {
+    let index = currentNoteInfo.currentNoteIndex;
+    // insert visual for sharp and flat yaay
+    if (currentNoteInfo.sharp) {
+        ctx.drawImage(sharpImg, cHalfWidth - 50, cHalfHeight - (index * 20) - 30, sharpImg.width, sharpImg.height);
+    } else {
+        ctx.drawImage(flatImg, cHalfWidth - 50, cHalfHeight - (index * 20) - 30, flatImg.width, flatImg.height);
+    }
+}
 
-    let input = sessionInput.value.toUpperCase();
+function checkNote(note, accidental) {
+    let match = note === noteMap.get(currentNoteInfo.currentNoteIndex);
+    if (match) {
+        if (currentNoteInfo.sharp) {
+            match = accidental === "#";
+        } else if (currentNoteInfo.flat) {
+            match = accidental === "b";
+        } else {
+            match = accidental == undefined;
+        }
+    }
 
-    if (sessionInput.value.length > 1) {
-        sessionInput.setCustomValidity("Too Many Characters");
-    }else if (input === noteMap.get(currentNoteInfo.currentNoteIndex)) {
-        sessionInput.setCustomValidity("");
+    if (match) {
         correctAnswers++;
         setResultStatEndTime();
-        addAttemptToResultsStats(input);
+        addAttemptToResultsStats(note, accidental);
         putCorrectAnswer(currentNoteInfo.currentNoteIndex);
-        markCorrect(input);
-        sessionInput.value = "";
+        markCorrect(note, accidental);
         setTimeout(generateRandomNote, 2000);
     } else {
-        addAttemptToResultsStats(input);
-        markIncorrect(input);
+        addAttemptToResultsStats(note, accidental);
+        markIncorrect(note, accidental);
         incorrectAnswers++;
-        sessionInput.value = "";
-        sessionInput.style.marginLeft = "20pt";
-        sessionInput.setCustomValidity("Wrong Answer");
     }
 }
 
@@ -342,20 +349,20 @@ function putCorrectAnswer(index) {
     ctx.lineWidth = 1;
     ctx.font = "20pt 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif"
     ctx.strokeText(noteMap.get(index), cHalfWidth + 35, cHalfHeight - (index * 20) + 7);
-    // this is so cursed but its here because otherwise the green check is always there unless the
-    // answer is wrong. resetting the form does nothing
-    // TODO: Remove following 3 lines once new inputs added
-    sessionInput.style.marginLeft = "20pt";
-    let html = "<span id=\"validity\" style=\"color:rgb(42, 165, 69);\">✓</span>";
-    document.getElementById("validity-holder").innerHTML = html;
 }
 
-function markCorrect(note) {
+function markCorrect(note, accidental) {
+    let modifier = accidental ?? "";
 
+    document.getElementById(note + modifier).classList.add("correct");
 }
 
-function markIncorrect(note) {
+function markIncorrect(note, accidental) {
+    let modifier = accidental ?? "";
 
+    let button = document.getElementById(note + modifier);
+    button.disabled = true;
+    button.classList.add("incorrect");
 }
 
 
@@ -393,9 +400,17 @@ function addToResultsStats() {
     } else {
         location = "staff";
     }
+
+    let note = noteMap.get(currentNoteInfo.currentNoteIndex);
+    if (currentNoteInfo.sharp) {
+        note += "#";
+    } 
+    if (currentNoteInfo.flat) {
+        note += "b";
+    }
     
     resultsStats.push({
-        note: noteMap.get(currentNoteInfo.currentNoteIndex),
+        note: note,
         attempts: 0,
         guesses: [],
         startTimeStamp: Date.now(),
@@ -408,9 +423,10 @@ function setResultStatEndTime() {
     resultsStats[resultsStats.length - 1].endTimeStamp = Date.now();
 }
 
-function addAttemptToResultsStats(guess) {
+function addAttemptToResultsStats(note, accidental) {
+    let modifier = accidental ?? "";
     resultsStats[resultsStats.length - 1].attempts++;
-    resultsStats[resultsStats.length - 1].guesses.push(guess);
+    resultsStats[resultsStats.length - 1].guesses.push(note + modifier);
 }
 
 function generateStats() {
@@ -494,7 +510,6 @@ function timeStampFormatter(timestamp) {
     times.ms = timestamp % 1000;
 
     let seconds = timestamp / 1000;
-    console.log(seconds);
     if (seconds > 59) {
         seconds  = seconds % 60;
     }
@@ -507,15 +522,12 @@ function timeStampFormatter(timestamp) {
     times.m = Math.floor(minutes);
 
     times.h = Math.floor(timestamp / 1000 / 60 / 60);
-    console.log(times);
 
     return times;
 }
 
-//directly from mdn Math.random() page
+// from mdn Math.random() page
 function getRandomInt(min, max) {
-  const minCeiled = Math.ceil(min);
-  const maxFloored = Math.floor(max);
-  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+    return Math.round(Math.random() * (max - min) + min);
 }
 

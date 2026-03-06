@@ -1,7 +1,7 @@
 
 
 html {
-    background-color: bisque;
+    background-color: rgba(192, 187, 207, 1);
 }
 
 button {
@@ -25,40 +25,6 @@ canvas {
     align-self: center;
 }
 
-#num-input {
-    background-color: rgba(255, 248, 240, 0.377);
-    border-radius: 5px;
-    height: 35px;
-}
-
-#num-input:invalid:focus {
-    outline: solid brown;
-}
-#num-input:invalid {
-    margin-left: 20pt;
-    border-color: brown;
-}
-
-#num-input:valid {
-    border-color: blue;
-}
-
-#num-input:invalid + div > span::after {
-  color: brown;
-  content: "✖";
-}
-
-/*  may need to just manually do this in js */
-/* #num-input:valid + span::after {
-  color:rgb(42, 165, 69);
-  content: "✓";
-} */
-
-#validity {
-    font-size: 20pt;
-    padding-left: 10px;
-}
-
 p {
     margin: .5rem;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
@@ -73,12 +39,6 @@ label {
     text-align: center;
 }
 
-#canvas-holder {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-}
-
 .row {
     display: flex;
     justify-content: center;
@@ -91,7 +51,13 @@ label {
     flex-direction: column;
 }
 
+#canvas-holder {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
 
+/* for results at the end */
 #correct-ans {
     color: rgb(42, 165, 69);
 }
@@ -100,11 +66,3 @@ label {
     color: brown;
 }
 
-
-#session-form {
-    display: flex;
-}
-
-.test {
-    background-color: rgba(12, 30, 48, 0.575);
-}

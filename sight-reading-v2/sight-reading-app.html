@@ -3,6 +3,8 @@
         <title>Sight Reading Applet</title>
         <link rel="stylesheet" href="styles.css">
         <link rel="stylesheet" href="toggle-button.css">
+        <link rel="stylesheet" href="session-inputs.css">
+        <link rel="stylesheet" href="table.css">
     </head>
     <body>
         <h1>Sight Reading Practice Applet</h1>
@@ -32,7 +34,7 @@
                     <label for="sharp-toggle"> Sharps
                         <div class="row">
                             <label id="sharp-toggle" class="toggle">
-                                <input type="checkbox" id="sharp-toggle" />
+                                <input type="checkbox" checked="false" id="sharp-toggle" />
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -41,7 +43,7 @@
                 <div class="column" style="margin-top: .5rem;">
                     <label for="flats-toggle"> Flats
                         <div class="row">
-                            <label id="flats-toggle" class="toggle">
+                            <label id="flats-toggle" checked="false" class="toggle">
                                 <input type="checkbox" id="flat-toggle" />
                                 <span class="slider"></span>
                             </label>
@@ -54,18 +56,6 @@
                 <div id="naturals" class="row"></div>
                 <div id="sharps" class="row"></div>
                 <div id="flats" class="row"></div>
-            </div>
-            <div id="session" class="row">
-                <form id="session-form">
-                    <input 
-                        type="text"
-                        id="num-input"
-                        maxlength="1"
-                    />
-                    <div id="validity-holder">
-                        <span id="validity"></span>
-                    </div>
-                </form>
             </div>
             <div id="results" class="column">
                 <div class="row">
@@ -103,8 +93,8 @@
                 <li style="text-decoration: line-through;">Add settings for clef, sharps, flats, etc
                 </li>
                 <ul>
-                    <li>Add Sharp/Flat functionality not just the setting</li>
-                    <li>This probably means adding in a new note input feature..... oof</li>
+                    <li style="text-decoration: line-through;">Add Sharp/Flat functionality not just the setting</li>
+                    <li style="text-decoration: line-through;">This probably means adding in a new note input feature..... oof</li>
                     <li>Eventually remove the Flat/Sharp toggle and just leave the option of Keys?</li>
                 </ul>
                 <li style="text-decoration: line-through;">Add more details on finish session page
@@ -115,18 +105,17 @@
                 <li>Add options for practicing in different keys
                     <ul>
                         <li>Drop down for Keys? A-G</li>
+                        <li>On Key selection, display all notes on canvas => could include this now as well (key of C you know)</li>
                         <li>And then ?Toggle Slider? for if the key is sharp or flat maybe</li>
                         <li>Still include flats and sharps for other notes? idk if there is any point in doing that?</li>
                     </ul>
                 </li>
+                <li>Add options for practicing different keys (show the sharps/flats and then practice choosing the correct key)</li>
                 <li style="text-decoration: line-through;">Cleanup</li>
                 <li>Cleanup round 2</li>
-                <li>Add multiple notes in the fuuuturee~
-                    <ul>
-                        <li>For those notes figure out how to connect them together</li>
-                    </ul>
-                </li>
+                <li>Add multiple notes in the fuuuturee~</li>
                 <li>Add Proper Validation Message After Failure</li>
+                <li>Toggle styling sticking around after page reload and checked is false (only resets after code changes saved)</li>
             </ul>
         </div>
         <script src="main.js"></script>
